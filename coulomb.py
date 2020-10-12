@@ -91,13 +91,6 @@ if __name__ == "__main__":
         vector_fuerza = np.array([Fx,Fy])
         vectores_fuerza.append(vector_fuerza)
     print("\n")
-    for i in range(len(vectores_fuerza)):
-        pos = i+1
-        temp_vector = vectores_fuerza[i]
-        Temp_x = convert_notacion(temp_vector[0])
-        Temp_y = convert_notacion(temp_vector[1])
-        Temp_V = [Temp_x,Temp_y]
-        print(f'Vector de fuerza {pos}: {Temp_V}')
     temp_vector = np.array([0,0])
     for vector in vectores_fuerza:
         temp_vector = np.add(temp_vector,vector)
@@ -106,7 +99,7 @@ if __name__ == "__main__":
     Temp_V = [Temp_x,Temp_y]
     print(f'\nVector resultante: {Temp_V}')
     Temp_Mag = distancia_o_magnitud(temp_vector[0],temp_vector[1])
-    print('\nMagnitud resultante:' + convert_notacion(Temp_Mag))
+    print('\nMagnitud resultante: ' + convert_notacion(Temp_Mag))
     Temp_Angle = math.atan2(temp_vector[1],temp_vector[0])
     Temp_Angle = math.degrees(Temp_Angle)
     print(f'Angulo resultante: {round(Temp_Angle,2)}')
