@@ -12,6 +12,17 @@ def distancia_o_magnitud(x,y):
     distancia = math.sqrt(componente)
     return distancia
 
+def calcular_angulo(x,y,carga_positiva):
+    temp_angle = math.atan2(y,x)
+    if carga_positiva and x >0 and y<0:
+        temp_angle = math.pi + temp_angle
+    if carga_positiva and x<0  and y<0:
+        temp_angle = math.pi + temp_angle
+    elif carga_positiva and x>0 and y>0:
+        temp_angle = math.pi + temp_angle
+    return temp_angle
+
+
 def add_parrafo(doc,parrafo):
     return doc.add_paragraph(parrafo)
 
@@ -25,22 +36,25 @@ def guardar_doc(doc,nombre):
     
 if __name__ == "__main__":
     K = 9E9
-    
     num_cargas = int(input("Ingrese el número de cargas: "))
     magnitud_cargas = []
     x_cargas = []
     y_cargas = []
+    cargas_positivas = []
     for i in range(num_cargas):
         magnitud_carga = float(input("Ingrese la magnitud de la carga: "))
+        if magnitud_carga > 0:
+            cargas_positivas.append(True)
+        else:
+            cargas_positivas.append(False)
         magnitud_cargas.append(magnitud_carga)
         x_carga = float(input("Ingrese la coordenada X de la carga: "))
         x_cargas.append(x_carga)
         y_carga = float(input("Ingrese la coordenada Y de la carga: "))
         y_cargas.append(y_carga)
     print("\n")
-    magnitud_libre = float(input("Ingrese la magnitud de la carga libre: "))
-    x_libre = float(input("Ingrese la coordenada X de la carga libre: "))
-    y_libre = float(input("Ingrese la coordenada Y de la carga libre: "))
+    x_libre = float(input("Ingrese la coordenada X del punto P: "))
+    y_libre = float(input("Ingrese la coordenada Y del punto P: "))
     print("\n")
 
     doc = docx.Document()
@@ -53,8 +67,10 @@ if __name__ == "__main__":
         pos = i +1
         texto_cargas = f'Carga {pos}: {convert_notacion(magnitud_cargas[i])} \t Coordenadas: ({x_cargas[i]},{y_cargas[i]})\n'
         add_next_line(parrafo_cargas,texto_cargas)
-    texto_cargas = f'Carga libre: {convert_notacion(magnitud_libre)} \t Coordenadas: ({x_libre},{y_libre})\n'
+    texto_cargas = f'Punto P: \t Coordenadas: ({x_libre},{y_libre})\n'
     add_next_line(parrafo_cargas,texto_cargas)
+    
+
 
     parrafo_distancia = add_parrafo(doc,"Distancias: \n")
     for i in range(len(magnitud_cargas)):
@@ -67,63 +83,44 @@ if __name__ == "__main__":
         texto_distancia = f'Distancia {pos}: {round(d,2)}\n'
         add_next_line(parrafo_distancia,texto_distancia)
         distancias.append(d)
-    parrafo_distancia_vector = add_parrafo(doc,"Vector de distancias: \n")
 
+    parrafo_distancia_vector = add_parrafo(doc,"Vector de distancias: \n")
     for i in range(len(vector_d_x)):
         pos = i+1
         Temp_Coord = [vector_d_x[i],vector_d_y[i]]
         text_vec_d = f'Vector de D{pos}: {Temp_Coord}\n'
         add_next_line(parrafo_distancia_vector,text_vec_d)
-    fuerza_cargas = []
-    signos_iguales = []
 
-    parrafo_fuerza =add_parrafo(doc,"Fuerza: \n")
-    for i in range(len(distancias)):
-        pos = i+1
-        temp_magintud = magnitud_cargas[i]
-        temp_distancia =distancias[i]
-        if temp_magintud<0 and magnitud_libre < 0:
-            signos_iguales.append(True)
-        elif temp_magintud >0 and magnitud_libre >0:
-            signos_iguales.append(True)
-        else:
-            signos_iguales.append(False)
-        r = math.pow(temp_distancia,2)
-        fuerza = K * ((magnitud_libre*temp_magintud)/r)
-        fuerza = abs(fuerza)
-        fuerza_cargas.append(fuerza)
-        fuerza_show = convert_notacion(fuerza)
-        fuerza_show = f'Fuerza {pos}: {fuerza_show}\n'
-        add_next_line(parrafo_fuerza,fuerza_show)
-
-    parrafo_angulos = add_parrafo(doc,"Angulos: \n")
     angulos_cargas = []
-    angulos_cargas_grados = []
-    for i in range(len(distancias)):
+    parrafo_angulos = add_parrafo(doc,"Angulos: \n")
+    for i in range(len(cargas_positivas)):
         pos = i+1
-        angulo = math.atan2(vector_d_y[i],vector_d_x[i])
-        if signos_iguales[i]:
-            angulo = math.pi + angulo
-        angulo_grados = math.degrees(angulo)
+        angulo = calcular_angulo(vector_d_x[i],vector_d_y[i],cargas_positivas[i])
         angulos_cargas.append(angulo)
-        angulos_cargas_grados.append(angulo_grados) 
+        angulo_grados = math.degrees(angulo)
         texto_angulo = f'Angulo {pos}: {round(angulo_grados,2)}\n'
         add_next_line(parrafo_angulos,texto_angulo)
-
 
     parrafo_vector_fuerza = add_parrafo(doc,"Vectores de Fuerza: \n")
     vectores_fuerza = []    
     for i in range(len(distancias)):
         pos = i+1
-        Fx = math.cos(angulos_cargas[i]) * fuerza_cargas[i]
-        Fy = math.sin(angulos_cargas[i]) * fuerza_cargas[i]
-        Fx_show = convert_notacion(Fx)
-        Fy_show = convert_notacion(Fy)
-        vector_fuerza_show = [Fx_show,Fy_show]
-        vector_fuerza_show = f'Vector de fuerza {pos}: {vector_fuerza_show}\n'
-        add_next_line(parrafo_vector_fuerza, vector_fuerza_show)
-        vector_fuerza = np.array([Fx,Fy])
+        temp_magintud = K * magnitud_cargas[i]
+        temp_distancia = distancias[i]
+        r = math.pow(temp_distancia,2)
+        E_x = math.cos(angulos_cargas[i]) * (temp_magintud/r)
+        E_y = math.sin(angulos_cargas[i]) * (temp_magintud/r)
+        vector_fuerza = np.array([E_x,E_y])
         vectores_fuerza.append(vector_fuerza)
+        vector_fuerza_show = f'Vector de Fuerza del Campo {pos}: ' +convert_notacion(E_x) +' , ' + convert_notacion(E_y) +'\n'
+        add_next_line(parrafo_vector_fuerza, vector_fuerza_show)
+        
+    parrafo_fuerza = add_parrafo(doc,"Fuerza del Campo: ")
+    for i in range(len(vectores_fuerza)):
+        pos = i+1
+        F_E = distancia_o_magnitud(vectores_fuerza[i][0],vectores_fuerza[i][1])
+        fuerza_show = f'Fuerza de Campo {pos}: '+ convert_notacion(F_E) + '\n'
+        add_next_line(parrafo_fuerza,fuerza_show)
 
     parrafo_resultante = add_parrafo(doc,"Valores Resultantes: \n")
     temp_vector = np.array([0,0])
@@ -141,5 +138,5 @@ if __name__ == "__main__":
     Temp_Angle = math.degrees(Temp_Angle)
     text_angle = f'Angulo resultante: {round(Temp_Angle,2)}°\n'
     add_next_line(parrafo_resultante, text_angle)
-    archivo = guardar_doc(doc,'ExamenCoulomb')
+    archivo = guardar_doc(doc,'ExamenCampoElectrico')
     convert(archivo)
